@@ -1,0 +1,21 @@
+{
+  "name": "hono-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run build:server && npm run build:client",
+    "build:client": "cd packages/client && npm run build",
+    "build:server": "cd packages/server && npm run build",
+    "dev": "npm run dev:client & npm run dev:server",
+    "dev:client": "cd packages/client && npm run dev",
+    "dev:server": "cd packages/server && npm run dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "workspaces": [
+    "packages/*"
+  ]
+}
