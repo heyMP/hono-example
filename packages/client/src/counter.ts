@@ -4,16 +4,16 @@ const $count = client.count.$get;
 const $countUpdate = client.count.$post;
 
 export class CounterUpdateEvent extends Event {
-  constructor(public prop: number | State) {
+  constructor(public props: 'state' | 'count') {
     super('update')
   }
 }
 
-export type State = 'idle' | 'syncing' | 'updating';
+export type State = 'idle' | 'initializing' | 'updating';
 
 export class Counter extends EventTarget {
   private _count = 0;
-  private _state: State = 'syncing';
+  private _state: State = 'initializing';
 
   constructor() {
     super();
@@ -26,20 +26,6 @@ export class Counter extends EventTarget {
 
   set state(value: State) {
     this._state = value;
-    this.dispatchEvent(new CounterUpdateEvent(value));
-  }
-
-  async init() {
-    try {
-      const res = await $count();
-      if (res.ok) {
-        const { count } = await res.json();
-        this.state = 'idle';
-        this.count = count;
-      }
-    } catch (error) {
-      console.error(error);
-    }
   }
 
   get count() {
@@ -47,18 +33,35 @@ export class Counter extends EventTarget {
   }
 
   set count(value: number) {
-    this._updateCount(value);
+    if (this.state === 'updating' || this.state === 'initializing') {
+      this._count = value;
+      this.state = 'idle';
+      this.dispatchEvent(new CounterUpdateEvent('count'));
+    }
+    else {
+      this.state = 'updating';
+      this._updateCount(value);
+    }
+  }
+
+  async init() {
+    try {
+      const res = await $count();
+      if (res.ok) {
+        const { count } = await res.json();
+        this.count = count;
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   private async _updateCount(value: number) {
-    this.state = 'updating';
     try {
       const res = await $countUpdate({ json: { count: value } });
       if (res.ok) {
         const { count } = await res.json();
-        this._state = 'idle';
-        this._count = count;
-        this.dispatchEvent(new CounterUpdateEvent(value));
+        this.count = count;
       }
     } catch (error) {
       console.error(error);

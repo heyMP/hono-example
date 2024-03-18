@@ -14,7 +14,10 @@ export function setupCounter(element: HTMLSpanElement) {
   }
 
   element.addEventListener('click', () => {
-    if (counter.state === 'syncing') return;
+    if (counter.state === 'initializing') return;
     counter.count++;
   })
+
+  // initialize button
+  update();
 }
